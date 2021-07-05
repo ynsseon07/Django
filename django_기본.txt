@@ -1,0 +1,168 @@
+# vscode에서 Ctrl + `  한 다음 Terminal에서 아래 내용을 입력한다.
+
+# conda version
+$ conda -V(대문자)
+   conda 4.10.1
+
+# 가상환경(Virtual Environment)을 위한  프로젝트의 독립된 공간을 생성
+File > open Folder... > 폴더명 작성 (EX: ToDoList-with-Django)
+
+# 가상환경생성 (앞서 생성한 폴더 내로 이동 후)
+$ conda create -n 가상환경이름 python=3.8.8 anaconda
+
+# 생성된 가상환경  리스트 확인
+$ conda info --envs 
+
+# 가상 환경 활성화
+$ conda activate 가상환경이름 (EX: conda activate ToDoList)
+
+# 가상환경을 활성화 할때 아래와 같은 오류가 뜨면 
+You may need to close and restart your shell after running 'conda init'.
+화면오른쪽 >bash을 클릭한 후 [Kill Terminal]을 선택한다.
+그리고 다시 conda activate 가상환경이름을 입력한다.
+아래와 같이 떠야 정상작동
+(가상환경이름)
+i3@DESKTOP-EGYCUNJ ~~~/c/study/ToDoList-with-Django
+
+# 가상환경 비활성화
+$ conda deactivate 
+
+# 가상환경 삭제(수업에서는 실행안함)
+$ conda remove -n ToDoList --all
+
+# django(장고)를 ToDoList 가상환경에 설치하기위해서 ToDoList 활성화한다.
+$ conda activate ToDoList
+
+#django(장고) 설치
+$ conda install django
+
+# django 프로젝트 생성
+$ django-admin startproject myproject
+
+# 현재 위치가 c/study/ToDoList-with-Django이므로
+   myproject으로 이동을 해야한다.
+$ cd myproject
+
+# server 실행
+$ python manage.py runserver
+
+# chrom을 실행한 다음 아래 주소를 입력한다.
+http://127.0.0.1:8000/  
+
+=======================================
+django(장고)에서 패턴 (page 142)
+
+Model          Controller         View       = MVC
+models.py      views.py        templates   = MTV
+
+
+# 프로젝트 내에 application 생성(추가)
+$ python manage.py startapp 앱이름 (EX: python manage.py startapp my_to_do_app)
+
+# ToDoList-with-Django > myproject > myproject > settings.py에서
+  INSTALLED_APPS에  'my_to_do_app'을 추가한다.
+   INSTALLED_APPS = [
+     'django.contrib.admin',
+     'django.contrib.auth',
+     'django.contrib.contenttypes',
+     'django.contrib.sessions',
+     'django.contrib.messages',
+     'django.contrib.staticfiles',
+     'my_to_do_app'
+]
+
+# myproject의 urls.py에 path 추가
+urlpatterns = [
+    path('', include('my_to_do_app.urls')),
+    path('admin/', admin.site.urls),
+]
+
+# my_to_do_app 에서  urls.py 파일을 생성한다.
+  urls.py에서 아래 내용을 입력한다.
+  from django.urls import path
+  from . import views
+
+  urlpatterns = [
+       path('', views.index)
+  ]
+
+# my_to_do_app에서 views.py의 index함수를 실행하고 
+  함수결과를  client에 넘겨준다.
+from django.shortcuts import render
+from django.http import HttpResponse
+
+def index(request):
+    return HttpResponse('my_to_do_app first page')
+
+
+# server 실행
+$ python manage.py runserver
+
+# chrome(클라이언트에서 페이지 요청을 한다.)
+ http://127.0.0.1:8000
+
+================================================
+[ views.py에서 Html파일을 클라이언트에 응답을 해줄때는 render함수를 사용한다.]
+
+html페이지를 응답을 해줄때
+# my_to_do_app에서 templates폴더를 만드고 하위로 my_to_do_app을 생성한다.
+# 앞단계에서 생성한 my_to_do_app폴더에 index.html을 생성을해서 구현한다.
+
+================================================
+django에서는 table을 model로 표현하고 model을 class으로 정의한다.
+model 생성 후에는 makemigrations / migrate 명령어 입력 필요
+
+# my_to_do_app >models.py 에서 아래 내용 입력
+class Todo(models.Model):
+    content = models.CharField(max_length = 255)
+
+## i3@DESKTOP-EGYCUNJ ~~~/c/study/ToDoList-with-Django/myproject 경로확인
+$ python manage.py makemigrations
+
+# my_to_do_app에 migrations폴더가 생성되고 폴더안에 0001_initial.py파일이 존재한다.
+
+# 데이터베이스에 model을 생성하기 위해서 아래처럼 입력한다.
+$ python manage.py migrate
+
+# model이 잘 생성되었는지 확인
+$ python manage.py dbshell
+
+# 생성된 table 확인
+sqlite> .tables
+
+#table정보 확인
+sqlite> pragma table_info(my_to_do_app);
+   순서 | 이름| 형태| notnull여부  | pk여부
+
+# table의 데이터 검색
+sqlite> SELECT * FROM my_to_do_app_todo;
+
+# sqlite 종료
+sqlite> .quit
+
+
+####### 기억하기 #######
+1. 폴더 구성 형태
+> myproject (django 프로젝트)
+   > myproject
+      > settings.py	: application에 대한 INSTALLED_APPS에 설정 필요
+      > urls.py	: application에 대한 path 설정 필요
+   > my_to_do_app (프로젝트에 쓰일 앱 생성)
+      > models.py	: 데이터베이스 테이블 생성
+      > urls.py	: views의 함수들을 url로 연결 (path 설정)
+      > views.py	: 기능 수행 관련 코드 작성 파일 (CRUD 기능) / 기능 수행 후에는 html 파일을 반환 (화면반환)
+      > templates	: 웹 사이트 화면을 표시
+         > my_to_do_app
+            > html 파일들 저장
+
+=> 웹 사이트 접속시 뜨는 화면은 templates 폴더 내의 html 파일들
+=> 웹 사이트 내의 사용자 접근에 따라 url연결 (이러한 url을 생성하는 것이 urls.py)
+=> url을 통해 views에 접근하여 기능을 수행 후 화면 반환
+
+
+2. HTML 파일 내에서 파이썬 문법 사용할 경우 {% %} 안에 작성
+   HTML 파일 내에서(웹 브라우저에서) 변수의 값을 출력하기 위해 {{ }} 안에 작성
+
+※ github에 업로드할 시 ※
+1. .gitignore 파일 만들어 db.sqlite3, .vscode, __pycache__, *pyc 작성
+2. settings.py 안의 SECRET_KEY는 삭제하고 올리기
